@@ -1,5 +1,7 @@
 # VoxMecanica Development Kit (Android)#
-The VoxMecanica Development Kit for Android provides an open source API and runtime to create voice-enabled applications for mobile devices running the Android operating system.  With VoxMecanica, voice-enabled apps use a simple API to create voice-driven dialog style interactions.  Dialogs can be initiated locally in-app or from a remote source such as server, another connected device, or any networked source that can hosts an HTTP service end-point.  You simply describe your voice interactions a series of JSON graph or via the Java API.  The VDK accepts the dialog graph and create an interactive voice-enabled session between your application and the user.
+The VoxMecanica Development Kit for Android provides an open source API and runtime to create voice-enabled applications for mobile devices running the Android operating system.  With VoxMecanica, voice-enabled apps use a simple API to create voice-driven dialog style interactions.  Dialogs can be initiated locally in-app or from a remote source such as server, another connected device, or any networked source that can hosts an HTTP service end-point.  
+
+The way it works is is simple.  A developer simply describe voice interactions a series of JSON or the Java object graphs.  The VDK accepts the dialog graph and create an interactive voice-enabled right in the app.  VoxMecanica uses the TTS and Speech Recognizer service built into the majority of devices.
 
 ## Features ##
 * Supports for older devices (Android API Level-18)
