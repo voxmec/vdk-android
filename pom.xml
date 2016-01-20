@@ -15,7 +15,7 @@
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>android-14</version>
+            <version>android-18</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>    
