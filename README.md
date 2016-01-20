@@ -1,19 +1,16 @@
-# Vox Mecanica VDK #
-The VoxMecanica Development Kit (VDK) is a pure Java archive that can be integrated in Android development to support voice application.  The VDK is designed to work with Google and other Voice Rec Providers running on the Android platform.  First iteration will work with Google.
+# VoxMecanica Development Kit (Android)#
+The VoxMecanica Development Kit for Android provides an open source API and runtime to create voice-enabled applications for mobile devices running the Android operating system.  With VoxMecanica, voice-enabled apps use a simple API to create voice-driven dialog style interactions.  Dialogs can be initiated locally in-app or from a remote source such as server, another connected device, or any networked source that can hosts an HTTP service end-point.  You simply describe your voice interactions a series of JSON graph or via the Java API.  The VDK accepts the dialog graph and create an interactive voice-enabled session between your application and the user.
 
 ## Features ##
-* A library that exposes programming interface for the Vox Runtime
-* Support for both remotely-originated dialog and local app-originated dialog
-* Offered as JAR for Android
-* FreeMium and Commercial support
+* Supports for older devices (Android API Level-18)
+* Uses Android's provided TTS and speech recognizer services
+* Dialog interaction can be encoded as either a JSON or Java object graph
+* The runtime automatically generates an interactive session from dialog graph
+* An app can initiate dialogs from a remote HTTP source
+* An app can also drive dialogs completely locally
+* The VDK can be integrated as a simple JAR
 
-## Freemium ##
-* Comes with Demo App (VoxMecanica on Google Play)
-* App uses the VDK to execute demo dialogs to promote adoption
-* Freemium on support Goole's Speech API
-* Possibly Open source in the future
+## License ##
+Apache License 2.0
 
-## Commercial ##
-* Based on Freemium codebase (see above)
-* Support for commercial speech provides such as ATT and Nuance
-* Released in future
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the specific language governing permissions and limitations under the License.
