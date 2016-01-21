@@ -30,12 +30,8 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
-/**
- * *
- * This is a wrapper class to manage http data using a wrapped instance of
- * Apache's HttpClient.
- *
- * @author Vladimir Vivien
+/***
+ * HttpService manages http interaction with server.
  */
 public class HttpService {
 
@@ -56,6 +52,7 @@ public class HttpService {
     public HttpService() {
     }
 
+    @Deprecated
     private void initialize() {
         LOG.i("Initializing Http Client Service");
         threadPool = Executors.newSingleThreadExecutor();
@@ -76,6 +73,7 @@ public class HttpService {
         }
     }
 
+    @Deprecated
     public void start() {
         if (!started) {
             initialize();
@@ -83,6 +81,7 @@ public class HttpService {
         }
     }
 
+    @Deprecated
     public void stop() {
         if (started && connectionMgr != null) {
             LOG.i("Shutting down http client service.");
@@ -93,6 +92,7 @@ public class HttpService {
         }
     }
 
+    @Deprecated
     public boolean isStarted() {
         return started;
     }
@@ -102,10 +102,12 @@ public class HttpService {
         return rsp.getContent();
     }
 
+    @Deprecated
     public HttpServerResponse requestResource(HttpClientRequest request) {
         return getServerResponse(request);
     }
 
+    //TODO - Refactor / Rename
     private HttpServerResponse getServerResponse(final HttpClientRequest req) {
         if (!started) {
             throw new VoxException("Http Client Service not started.");
@@ -141,6 +143,7 @@ public class HttpService {
         }
     }
 
+    @Deprecated
     private class HttpResponseHandler implements ResponseHandler<HttpServerResponse> {
 
         private String originalResourceRequested;
