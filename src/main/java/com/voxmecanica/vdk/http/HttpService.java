@@ -3,50 +3,23 @@ package com.voxmecanica.vdk.http;
 import android.net.http.AndroidHttpClient;
 import com.voxmecanica.vdk.VoxException;
 import com.voxmecanica.vdk.logging.Logger;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import okhttp3.Interceptor;
-import okhttp3.Response;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-
 /***
  * HttpService manages http interaction with server.
  */
 public class HttpService {
-
-    public static class Config {
-        public static final String HTTP_USER_AGENT = "VoxMecanica/(Voice Client)";
-        public static final String DEFAULT_CHARCSET = "UTF-8";
-        public static final String DEFAULT_SUBMIT_METHOD = "GET";
-
-        public static final long DEFAULT_CONNECT_TIMEOUT_SEC = 17;
-        public static final long DEFAULT_WRITE_TIMEOUT_SEC = 21;
-        public static final long DEFAULT_READ_TIMEOUT_SEC = 21;
-
-        public static final int DEFAULT_HTTP_PORT = 80;
-        public static final int DEFAULT_HTTPS_PORT = 443;
-    }
 
     private Logger LOG = new Logger("HttpService");
     private boolean started;
@@ -54,21 +27,33 @@ public class HttpService {
     private ClientConnectionManager connectionMgr;
     private ExecutorService threadPool;
     private okhttp3.OkHttpClient okClient;
-
     public HttpService() {
         okClient = new okhttp3.OkHttpClient.Builder()
                 .connectTimeout(Config.DEFAULT_CONNECT_TIMEOUT_SEC, TimeUnit.SECONDS)
                 .writeTimeout(Config.DEFAULT_WRITE_TIMEOUT_SEC, TimeUnit.SECONDS)
                 .readTimeout(Config.DEFAULT_READ_TIMEOUT_SEC, TimeUnit.SECONDS)
-               .build();
+                .build();
     }
 
-    //Get gets a remote resource using default configs
-    public okhttp3.Response get(String url, Map<String,String> params){
+    // ResponseAsString returns the body of response as string.
+    public static String ResponseAsString(okhttp3.Response rsp) {
+        String result = "";
+        if (rsp != null && rsp.body().contentLength() > 0) {
+            try {
+                result = rsp.body().string();
+            } catch (IOException ex) {
+                throw new VoxException("HttpService - Unable to access response as string:", ex);
+            }
+        }
+        return result;
+    }
+
+    //Get gets a remote resource using default request configs
+    public okhttp3.Response get(String url, Map<String, String> params) {
         okhttp3.HttpUrl httpUrl = okhttp3.HttpUrl.parse(url);
         okhttp3.HttpUrl.Builder builder = httpUrl.newBuilder();
         if (params != null) {
-            for (Map.Entry<String, String> param : params.entrySet()){
+            for (Map.Entry<String, String> param : params.entrySet()) {
                 builder.addQueryParameter(param.getKey(), param.getValue());
             }
         }
@@ -85,14 +70,14 @@ public class HttpService {
             throw new VoxException("HttpService - Error on http Get:", ex);
         }
 
-        if (!rsp.isSuccessful()){
+        if (!rsp.isSuccessful()) {
             throw new VoxException("HttpService - Response not successful, got code " + rsp.code());
         }
         return rsp;
     }
 
-    //post posts a remote resource using default configs
-    public okhttp3.Response post(String url, Map<String,String> params){
+    //post posts a remote resource using default request configs
+    public okhttp3.Response post(String url, Map<String, String> params) {
         okhttp3.HttpUrl httpUrl = okhttp3.HttpUrl.parse(url);
         okhttp3.FormBody.Builder formBldr = new okhttp3.FormBody.Builder();
 
@@ -114,35 +99,34 @@ public class HttpService {
             throw new VoxException("HttpService - Error on http Get:", ex);
         }
 
-        if (!rsp.isSuccessful()){
+        if (!rsp.isSuccessful()) {
             throw new VoxException("HttpService - Response not successful, got code " + rsp.code());
         }
         return rsp;
     }
 
-    public okhttp3.Response serve(String url, Map<String,String> params, String method) {
-        if (method.toUpperCase().equals("GET")){
+    // serve calls either get or post.
+    public okhttp3.Response serve(String url, Map<String, String> params, String method) {
+        if (method.toUpperCase().equals("GET")) {
             return get(url, params);
-        }else if (method.toUpperCase().equals("POST")){
+        } else if (method.toUpperCase().equals("POST")) {
             return post(url, params);
-        }else{
+        } else {
             throw new UnsupportedOperationException("HttpService - Unsupported http method " + method);
         }
     }
 
-    // ResponseAsString returns the body of response as string.
-    public static String ResponseAsString(okhttp3.Response rsp) {
-        String result = "";
-        if (rsp != null && rsp.body().contentLength() > 0) {
-           try {
-               result = rsp.body().string();
-           }catch (IOException ex){
-               throw new VoxException("HttpService - Unable to access response as string:", ex);
-            }
+    // serve uses okhttp3.Request to generate a request
+    public okhttp3.Response serve(okhttp3.Request req) {
+        okhttp3.Response rsp;
+        try {
+            rsp = okClient.newCall(req).execute();
+        } catch (IOException ex) {
+            throw new VoxException("HttpService - Error on http Get:", ex);
         }
-        return result;
-    }
 
+        return rsp;
+    }
 
     @Deprecated
     private void initialize() {
@@ -199,8 +183,6 @@ public class HttpService {
         return getServerResponse(request);
     }
 
-
-
     //TODO - Refactor / Rename
     private HttpServerResponse getServerResponse(final HttpClientRequest req) {
         if (!started) {
@@ -213,12 +195,12 @@ public class HttpService {
         LOG.d("HttpService - Retrieving data from location: " + req.getRequestPath());
 
         Future<HttpServerResponse> reqResult = threadPool.submit(
-            new Callable<HttpServerResponse>() {
-                @Override
-                public HttpServerResponse call() throws Exception {
-                    return httpClient.execute(uriRequest, new HttpResponseHandler(uriRequest.getURI().toString()));
+                new Callable<HttpServerResponse>() {
+                    @Override
+                    public HttpServerResponse call() throws Exception {
+                        return httpClient.execute(uriRequest, new HttpResponseHandler(uriRequest.getURI().toString()));
+                    }
                 }
-            }
         );
 
         try {
@@ -226,7 +208,7 @@ public class HttpService {
             LOG.d("Received response from " + uriRequest.getURI().toString());
             if (response.getStatusCode() != 200) {
                 throw new VoxException(
-                    String.format("HttpService - Dialog server returned unexpected HTTP code %d", response.getStatusCode())
+                        String.format("HttpService - Dialog server returned unexpected HTTP code %d", response.getStatusCode())
                 );
             }
             return response;
@@ -235,6 +217,19 @@ public class HttpService {
         } catch (InterruptedException ex) {
             throw new VoxException("HttpService - Connection exception:", ex);
         }
+    }
+
+    public static class Config {
+        public static final String HTTP_USER_AGENT = "VoxMecanica/(Voice Client)";
+        public static final String DEFAULT_CHARCSET = "UTF-8";
+        public static final String DEFAULT_SUBMIT_METHOD = "GET";
+
+        public static final long DEFAULT_CONNECT_TIMEOUT_SEC = 17;
+        public static final long DEFAULT_WRITE_TIMEOUT_SEC = 21;
+        public static final long DEFAULT_READ_TIMEOUT_SEC = 21;
+
+        public static final int DEFAULT_HTTP_PORT = 80;
+        public static final int DEFAULT_HTTPS_PORT = 443;
     }
 
     @Deprecated

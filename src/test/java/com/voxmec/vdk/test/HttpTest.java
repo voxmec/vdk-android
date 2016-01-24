@@ -1,5 +1,6 @@
 package com.voxmec.vdk.test;
 
+import com.voxmecanica.vdk.VoxException;
 import com.voxmecanica.vdk.http.HttpService;
 import okhttp3.HttpUrl;
 import okhttp3.Response;
@@ -12,40 +13,89 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class HttpTest {
-   @Test
-    public void testHttp_GetOk() throws Exception{
-       MockWebServer svr = new MockWebServer();
-       svr.enqueue(new MockResponse().setBody("{dialog}"));
-       svr.start();
-       HttpUrl url = svr.url("/test");
+    @Test
+    public void testHttp_GetOk() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setBody("{dialog}"));
+        svr.start();
+        HttpUrl url = svr.url("/test");
 
-       HttpService http = new HttpService();
-       Response rsp = http.get(url.toString(), null);
-       assertEquals(rsp.body().string(), "{dialog}");
+        HttpService http = new HttpService();
+        Response rsp = http.get(url.toString(), null);
+        assertEquals(rsp.body().string(), "{dialog}");
 
-       svr.shutdown();
+        svr.shutdown();
     }
 
-   @Test
-   public void testHttp_GetWithParams() throws Exception{
-      MockWebServer svr = new MockWebServer();
-      svr.enqueue(new MockResponse().setBody("{dialog}"));
-      svr.start();
-      HttpUrl url = svr.url("/test");
+    @Test
+    public void testHttp_GetWithParams() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setBody("{dialog}"));
+        svr.start();
+        HttpUrl url = svr.url("/test");
 
-      HttpService http = new HttpService();
-      Map<String,String> params = new HashMap<String, String>();
-      params.put("p0", "hello");
-      params.put("p1", "test");
-      Response rsp = http.get(url.toString(), params);
+        HttpService http = new HttpService();
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("p0", "hello");
+        params.put("p1", "test");
+        Response rsp = http.get(url.toString(), params);
 
-      assertEquals(rsp.body().string(), "{dialog}");
+        assertEquals(rsp.body().string(), "{dialog}");
 
-      RecordedRequest req = svr.takeRequest();
-      assertEquals(req.getPath(), "/test?p0=hello&p1=test");
-      svr.shutdown();
-   }
+        RecordedRequest req = svr.takeRequest();
+        assertEquals(req.getPath(), "/test?p0=hello&p1=test");
+        svr.shutdown();
+    }
+
+    @Test(expected = VoxException.class)
+    public void testHttp_GetFailed() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setResponseCode(404));
+        svr.start();
+        HttpUrl url = svr.url("/test");
+
+        HttpService http = new HttpService();
+        Response rsp = http.get(url.toString(), null);
+    }
+
+
+    @Test
+    public void testHttp_PostOk() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setBody("{dialog}"));
+        svr.start();
+        HttpUrl url = svr.url("/test");
+
+        HttpService http = new HttpService();
+        Response rsp = http.post(url.toString(), null);
+        assertEquals(rsp.body().string(), "{dialog}");
+
+        svr.shutdown();
+    }
+
+    @Test
+    public void testHttp_PostWithParams() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setBody("{dialog}"));
+        svr.start();
+        HttpUrl url = svr.url("/test");
+
+        HttpService http = new HttpService();
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("p0", "hello");
+        params.put("p1", "test");
+        Response rsp = http.post(url.toString(), params);
+
+        assertEquals(rsp.body().string(), "{dialog}");
+
+        RecordedRequest req = svr.takeRequest();
+        assertEquals(req.getPath(), "/test");
+        assertEquals(req.getMethod(), "POST");
+        String bod = req.getBody().readUtf8Line();
+        assertEquals(bod, "p0=hello&p1=test");
+
+        svr.shutdown();
+    }
 }
