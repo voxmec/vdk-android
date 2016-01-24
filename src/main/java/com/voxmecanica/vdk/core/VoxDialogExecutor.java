@@ -1,10 +1,8 @@
 package com.voxmecanica.vdk.core;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.speech.RecognitionListener;
@@ -21,13 +19,11 @@ import com.voxmecanica.vdk.api.PartRenderer;
 import com.voxmecanica.vdk.api.PausablePart;
 import com.voxmecanica.vdk.api.PlayablePart;
 import com.voxmecanica.vdk.api.SpeakablePart;
-import com.voxmecanica.vdk.http.HttpClientRequest;
 import com.voxmecanica.vdk.http.HttpService;
 import com.voxmecanica.vdk.logging.Logger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class that implements the state machine for the Voice Dialog.
@@ -402,13 +398,13 @@ public class VoxDialogExecutor implements DialogExecutor {
 
     private void fetchRemoteProgram(DialogContext ctx) {
         DialogRequest dialogReq = (DialogRequest) ctx.getValue(DialogContext.KEY_DIALOG_REQUEST);
-        
-        HttpClientRequest req = new HttpClientRequest(dialogReq.getMethod(), dialogReq.getLocation());
-        req.addParameters(ctx.getParameters());
-        
-        byte[] response;
+        String dialogStr;
         try {
-            response = runtime.getHttpClientService().requestResourceAsBytes(req);
+            String url = dialogReq.getLocation().toString();
+            String method = dialogReq.getMethod();
+            dialogStr = HttpService.ResponseAsString(
+                    runtime.getHttpService().serve(url, ctx.getParameters(), method)
+            );
         } catch (Exception ex) {
             throw new VoxException(
                     VoxException.ErrorType.HttpError,
@@ -416,12 +412,9 @@ public class VoxDialogExecutor implements DialogExecutor {
             );
         }
 
-        String dialogStr = new String(response);
-        VoxDialog dialog = null;
-
         if (dialogStr.length() > 0) {
             try {
-                dialog = VoxDialogParser.parse(dialogStr);
+                VoxDialog dialog = VoxDialogParser.parse(dialogStr);
                 dialog.setOriginUri(dialogReq.getLocation());
                 ctx.setDialogUri(dialogReq.getLocation());
                 ctx.setDialog(dialog);

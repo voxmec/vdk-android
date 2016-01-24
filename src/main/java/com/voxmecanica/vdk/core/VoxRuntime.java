@@ -106,10 +106,6 @@ public class VoxRuntime {
             mediaPlayer.shutdown();
         shutdownRecognizer();
         shutdownTTS();
-        if (httpService != null)
-            httpService.stop();
-        if (dialogExec != null)
-            dialogExec.shutdown();
     }
     
     protected Context getApplicationContext() {
@@ -121,7 +117,7 @@ public class VoxRuntime {
         return dialogExec;
     }
 
-    protected HttpService getHttpClientService(){
+    protected HttpService getHttpService(){
         assertReadiness();
         return httpService;
     }
@@ -178,7 +174,6 @@ public class VoxRuntime {
         LOG.d("Initializing runtime resources...");
         connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         httpService = new HttpService();
-        httpService.start();
         mediaPlayer = new VoxMediaPlayer();
         recognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecEnabled = (SpeechRecognizer.isRecognitionAvailable(context));

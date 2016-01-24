@@ -57,7 +57,7 @@ public class HttpTest {
         HttpUrl url = svr.url("/test");
 
         HttpService http = new HttpService();
-        Response rsp = http.get(url.toString(), null);
+        http.get(url.toString(), null);
     }
 
 
@@ -95,6 +95,31 @@ public class HttpTest {
         assertEquals(req.getMethod(), "POST");
         String bod = req.getBody().readUtf8Line();
         assertEquals(bod, "p0=hello&p1=test");
+
+        svr.shutdown();
+    }
+
+    @Test(expected = VoxException.class)
+    public void testHttp_PostFailed() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setResponseCode(404));
+        svr.start();
+        HttpUrl url = svr.url("/test");
+
+        HttpService http = new HttpService();
+        http.post(url.toString(), null);
+    }
+
+    @Test
+    public void testHttp_ResponseAsString() throws Exception {
+        MockWebServer svr = new MockWebServer();
+        svr.enqueue(new MockResponse().setBody("{dialog}"));
+        svr.start();
+        HttpUrl url = svr.url("/test");
+
+        HttpService http = new HttpService();
+        Response rsp = http.post(url.toString(), null);
+        assertEquals(HttpService.ResponseAsString(rsp), "{dialog}");
 
         svr.shutdown();
     }
