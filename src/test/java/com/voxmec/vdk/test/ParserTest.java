@@ -10,13 +10,13 @@ public class ParserTest {
     public void parseTest_Part_Speak() {
         Gson gson = new Gson();
         String json = "{" +
-                "\"name\":\"SPEAK\", " +
+                "\"type\":\"SPEAK\", " +
                 "\"title\":\"speak test\"," +
                 "\"text\":\"spoken part\"" +
                 "}";
 
         Part part = gson.fromJson(json, Part.class);
-        assertEquals(part.getName().name(), "SPEAK");
+        assertEquals(part.getType().name(), "SPEAK");
         assertEquals(part.getTitle(), "speak test");
         assertEquals(part.getText(), "spoken part");
     }

@@ -4,17 +4,17 @@ package com.voxmecanica.vdk.core;
  * Part represents dialog parts (i.e. speak, listen, pause, etc)
  */
 public class Part {
-    private Name name;
+    private Type type;
     private String title;
     private String text;
     private String sensivitiy;
 
-    public Name getName() {
-        return name;
+    public Type getType() {
+        return type;
     }
 
-    public void setName(Name name) {
-        this.name = name;
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public String getTitle() {
