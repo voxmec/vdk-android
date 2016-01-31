@@ -1,9 +1,13 @@
 package com.voxmec.vdk.test;
 
 import com.google.gson.Gson;
-import com.voxmecanica.vdk.core.Part;
+import com.voxmecanica.vdk.parser.Part;
 import org.junit.Test;
+
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ParserTest {
     @Test
@@ -11,14 +15,14 @@ public class ParserTest {
         Gson gson = new Gson();
         String json = "{" +
                 "\"type\":\"SPEAK\", " +
-                "\"title\":\"speak test\"," +
-                "\"text\":\"spoken part\"" +
+                "\"speak\":{\"text\":\"Hello\", \"title\":\"Speech Title\"}" +
                 "}";
 
         Part part = gson.fromJson(json, Part.class);
         assertEquals(part.getType().name(), "SPEAK");
-        assertEquals(part.getTitle(), "speak test");
-        assertEquals(part.getText(), "spoken part");
+       assertNotNull(part.getSpeak());
+        assertEquals(part.getSpeak().getText(), "Hello");
+        assertEquals(part.getSpeak().getTitle(), "Speech Title");
     }
 
 }

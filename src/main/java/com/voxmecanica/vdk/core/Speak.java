@@ -11,6 +11,8 @@ public class Speak extends AbstractDialogPart implements SpeakablePart {
     private float speachPitch;
     private boolean displayed;
 
+    public Speak(){}
+
     public Speak(String text, String title, String content) {
         setMetaPart(MetaPart.SPEAK);
         textToSpeak = text;
@@ -61,7 +63,7 @@ public class Speak extends AbstractDialogPart implements SpeakablePart {
 
     @Override
     public String toString() {
-        return "Speak [textToSpeak=" + textToSpeak + ", speachRate="
+        return "SpokenPart [textToSpeak=" + textToSpeak + ", speachRate="
                 + speachRate + ", speachPitch=" + speachPitch + "]";
     }
 }

@@ -1,19 +1,24 @@
 package com.voxmecanica.vdk.core;
 
+import com.voxmecanica.vdk.api.DialogPart;
+import com.voxmecanica.vdk.parser.PartType;
+
 /**
  * Part represents dialog parts (i.e. speak, listen, pause, etc)
  */
 public class Part {
-    private Type type;
+    private PartType type;
     private String title;
     private String text;
     private String sensivitiy;
 
-    public Type getType() {
+    private DialogPart part;
+
+    public PartType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(PartType type) {
         this.type = type;
     }
 
