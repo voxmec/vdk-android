@@ -15,14 +15,28 @@ public class ParserTest {
         Gson gson = new Gson();
         String json = "{" +
                 "\"type\":\"SPEAK\", " +
-                "\"speak\":{\"text\":\"Hello\", \"title\":\"Speech Title\"}" +
+                "\"text\":\"Hello\", \"title\":\"Speech Title\"" +
                 "}";
 
         Part part = gson.fromJson(json, Part.class);
         assertEquals(part.getType().name(), "SPEAK");
-       assertNotNull(part.getSpeak());
-        assertEquals(part.getSpeak().getText(), "Hello");
-        assertEquals(part.getSpeak().getTitle(), "Speech Title");
+        assertEquals(part.getText(), "Hello");
+        assertEquals(part.getTitle(), "Speech Title");
     }
+
+    @Test
+    public void parseTest_Part_Input() {
+        Gson gson = new Gson();
+        String json = "{" +
+                "\"type\":\"INPUT\", " +
+                "\"input-mode\":\"ASR\"" +
+                "}";
+
+        Part part = gson.fromJson(json, Part.class);
+        assertEquals(part.getType().name(), "INPUT");
+        assertEquals(part.getMode().name(), "ASR");
+    }
+
+    //TODO - Test directives {rate, pitch, pause, etc}
 
 }
