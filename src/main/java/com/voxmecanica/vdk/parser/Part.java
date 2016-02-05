@@ -17,7 +17,7 @@ public class Part {
     private long pause;
     private String voice;
 
-    @SerializedName("input-mode") private InputMode mode;
+    @SerializedName("inputMode") private InputMode mode;
 
 
     public PartType getType() {
