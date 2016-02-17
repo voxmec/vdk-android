@@ -1,10 +1,9 @@
 package com.voxmecanica.vdk.core;
 
-import com.voxmecanica.vdk.api.Dialog;
+import com.voxmecanica.vdk.parser.Dialog;
 import com.voxmecanica.vdk.api.DialogContext;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 

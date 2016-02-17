@@ -1,6 +1,7 @@
 package com.voxmecanica.vdk.api;
 
 import com.voxmecanica.vdk.core.VoxRuntime;
+import com.voxmecanica.vdk.parser.Dialog;
 
 import java.net.URI;
 import java.util.Map;

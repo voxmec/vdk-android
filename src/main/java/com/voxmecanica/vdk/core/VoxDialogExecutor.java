@@ -8,8 +8,10 @@ import android.os.Message;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+
+import com.voxmecanica.vdk.Constants;
 import com.voxmecanica.vdk.VoxException;
-import com.voxmecanica.vdk.api.Dialog;
+import com.voxmecanica.vdk.parser.*;
 import com.voxmecanica.vdk.api.DialogContext;
 import com.voxmecanica.vdk.api.DialogExecutor;
 import com.voxmecanica.vdk.api.DialogPart;
@@ -21,6 +23,8 @@ import com.voxmecanica.vdk.api.PlayablePart;
 import com.voxmecanica.vdk.api.SpeakablePart;
 import com.voxmecanica.vdk.http.HttpService;
 import com.voxmecanica.vdk.logging.Logger;
+import com.voxmecanica.vdk.parser.Part;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -271,17 +275,17 @@ public class VoxDialogExecutor implements DialogExecutor {
         if (newDialog == null || newDialog.getParts() == null || newDialog.getParts().size() == 0){
             throw new VoxException ("A new  instance must be provided to interject.");
         }
-        VoxDialog existingDialog = (VoxDialog)ctx.getDialog();
-        VoxDialog interjection   = (VoxDialog)newDialog;
-        interjection.setDialogSubmission(existingDialog.getSubmissionRequest());
-        interjection.setOriginUri(existingDialog.getOriginUri());
-        List<DialogPart> parts = existingDialog.getParts();
+        Dialog existingDialog = ctx.getDialog();
+        Dialog interjection   = newDialog;
+        // transfer properties from running dialog to interjection dialog
+        interjection.setProperties(existingDialog.getProperties());
+        List<Part> parts = existingDialog.getParts();
         int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
         if( pc > parts.size()){
             throw new VoxException("DialogContext is in unexpected state. PC value bigger than size of dialog.");
         }
         if (parts.size() > 0){
-            List<DialogPart> rest = parts.subList(pc, parts.size());
+            List<Part> rest = parts.subList(pc, parts.size());
             interjection.getParts().addAll(rest);
             ctx.setDialog(interjection);
         } else {
@@ -293,7 +297,8 @@ public class VoxDialogExecutor implements DialogExecutor {
     }
     
     @Override
-    // submits dialog result to remote server and starts new dialog if one returned.
+    // submits dialog result to remote server and starts new dialog if one returned
+    //TODO - Continue to refactor new Dialog into code.
     public void submit(DialogContext ctx) {
         Dialog dialog = (Dialog) ctx.getValue(VoxDialogContext.KEY_DIALOG);
         if (dialog != null) {
