@@ -111,4 +111,33 @@ public class ParserTest {
         assertEquals(dialog.getParams().get(1).getValue(), "false");
     }
 
+    @Test
+    public void parseTest_DialogParser() {
+        DialogParser parser = new DialogParser();
+        String json = "{" +
+                "\"properties\":{" +
+                        "\"originUri\":\"http://vox.io/\"," +
+                        "\"submitMethod\":\"POST\"" +
+                    "}," +
+                "\"parts\":[" +
+                    "{\"type\":\"INPUT\", \"inputMode\":\"ASR\"},"+
+                    "{\"type\":\"SPEAK\", \"text\":\"hello\"}" +
+                "]," +
+                "\"params\":[" +
+                    "{\"id\":\"city_name\", \"value\":\"Toronto\"}," +
+                    "{\"id\":\"is_available\", \"value\":\"false\"}" +
+                "]" +
+               "}";
+
+        Dialog dialog = parser.parse(json);
+        assertEquals(dialog.getProperties().get("originUri"), "http://vox.io/");
+        assertEquals(dialog.getProperties().get("submitMethod"), "POST");
+        assertEquals(dialog.getParts().size(), 2);
+        assertEquals(dialog.getParts().get(0).getType(), PartType.INPUT);
+        assertEquals(dialog.getParts().get(1).getText(), "hello");
+        assertEquals(dialog.getParams().size(), 2);
+        assertEquals(dialog.getParams().get(0).getId(), "city_name");
+        assertEquals(dialog.getParams().get(1).getValue(), "false");
+    }
+
 }
