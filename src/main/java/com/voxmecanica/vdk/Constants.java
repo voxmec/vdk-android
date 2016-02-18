@@ -20,11 +20,6 @@ public class Constants {
         public static final String DIALOG_DESC = "desc";
     }
 
-    public static class DialogProps {
-        public static final String ORIG_URI = "originUri";
-        public static final String SUBMIT_URI = "submitUri";
-        public static final String SUBMIT_METHOD = "submitMethod";
-        public static final String SUBMIT_FORMAT = "submitFormat";
-    }
+
 
 }

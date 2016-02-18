@@ -9,6 +9,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
+import com.sun.tools.internal.jxc.ap.Const;
 import com.voxmecanica.vdk.Constants;
 import com.voxmecanica.vdk.VoxException;
 import com.voxmecanica.vdk.parser.*;
@@ -302,11 +303,11 @@ public class VoxDialogExecutor implements DialogExecutor {
     public void submit(DialogContext ctx) {
         Dialog dialog = (Dialog) ctx.getValue(VoxDialogContext.KEY_DIALOG);
         if (dialog != null) {
-            DialogRequest submission = dialog.getSubmissionRequest();
+            URI origUri = URI.create(dialog.getOrigUriProp());
+            URI submitUri = origUri.resolve(dialog.getSubmitUriProp());
             //follow submission link.
-            if (submission != null && submission.getLocation() != null) {
-                LOG.d("Dialog has DialogSubmission : " + submission);
-                URI location = dialog.getOriginUri().resolve(submission.getLocation());
+            if (submitUri != null) {
+                LOG.d("Found dialog has submission uri : " + submitUri);
                 ctx.putValue(DialogContext.KEY_DIALOG_REQUEST, new DialogSubmissionRequest(location, submission.getMethod()));
                 
                 // if dialog from http, submit it
@@ -315,7 +316,23 @@ public class VoxDialogExecutor implements DialogExecutor {
                 }
             }
         }
+        // if no submission
     }
+
+    //TODO - skip call to submit() and dispatch FETCH_REMOTE_PROG from here.
+     private void endProgram(final DialogContext ctx) {
+         LOG.d("Dialog program ending...");
+         // is there a submission info
+         Dialog dialog = (Dialog) ctx.getValue(VoxDialogContext.KEY_DIALOG);
+         if (dialog != null && dialog.getSubmitUriProp() != null){
+            submit(ctx);
+         }else if (onProgramEndedCallback != null) {
+            LOG.d("Found ProgramEndedCallBack, delegating...");
+            onProgramEndedCallback.exec(makeCtxClone(ctx));
+        }
+    }
+
+
     
     private void execute(DialogContext context) {
         Dialog dialog = context.getDialog();
@@ -537,17 +554,7 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
     }
 
-    private void endProgram(final DialogContext ctx) {
-        LOG.d("Dialog program ending...");
-        if (onProgramEndedCallback != null) {
-            LOG.d("Found ProgramEndedCallBack, delegating...");
-            onProgramEndedCallback.exec(makeCtxClone(ctx));
-        }else{
-            submit(ctx);
-        }        
-    }
-    
-    private DialogContext makeCtxClone(DialogContext ctx){
+   private DialogContext makeCtxClone(DialogContext ctx){
         VoxDialogContext newCtx = new VoxDialogContext(ctx.getRuntime());
         newCtx.setValues(ctx.getValues());
         return newCtx;
