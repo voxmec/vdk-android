@@ -296,37 +296,27 @@ public class VoxDialogExecutor implements DialogExecutor {
         ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(0));
         execute(ctx);
     }
-    
-    @Override
-    // submits dialog result to remote server and starts new dialog if one returned
-    //TODO - Continue to refactor new Dialog into code.
-    public void submit(DialogContext ctx) {
-        Dialog dialog = (Dialog) ctx.getValue(VoxDialogContext.KEY_DIALOG);
-        if (dialog != null) {
-            URI origUri = URI.create(dialog.getOrigUriProp());
-            URI submitUri = origUri.resolve(dialog.getSubmitUriProp());
-            //follow submission link.
-            if (submitUri != null) {
-                LOG.d("Found dialog has submission uri : " + submitUri);
-                ctx.putValue(DialogContext.KEY_DIALOG_REQUEST, new DialogSubmissionRequest(location, submission.getMethod()));
-                
-                // if dialog from http, submit it
-                if (location.getScheme().equals("http") || location.getScheme().equals("https")) {
-                    engine.sendMessage(Message.obtain(engine, Event.OP_FETCH_REMOTE_PROG, ctx));
-                }
-            }
-        }
-        // if no submission
-    }
 
-    //TODO - skip call to submit() and dispatch FETCH_REMOTE_PROG from here.
+     // endProgram will generates a DialogResult.
+     // Sends a DialogResult to remote server if remote.
+    //  Returns result as callback param other wise.
      private void endProgram(final DialogContext ctx) {
+              // TODO - create DialogResult here to carry the result of the dialog forward
+             DialogResult result = new DialogResult();
          LOG.d("Dialog program ending...");
          // is there a submission info
          Dialog dialog = (Dialog) ctx.getValue(VoxDialogContext.KEY_DIALOG);
-         if (dialog != null && dialog.getSubmitUriProp() != null){
-            submit(ctx);
-         }else if (onProgramEndedCallback != null) {
+         if (dialog != null && dialog.getSubmitUriProp() != null){ // submit remote
+            URI origUri = URI.create(dialog.getOrigUriProp());
+             URI submitUri;
+             if (origUri != null){
+                 submitUri = origUri.resolve(dialog.getSubmitUriProp());
+             }else{
+                 submitUri = URI.create(dialog.getSubmitUriProp());
+             }
+             ctx.putValue(DialogContext.KEY_DIALOG, dialog);
+             engine.sendMessage(Message.obtain(engine, Event.OP_FETCH_REMOTE_PROG, ctx));
+         }else if (onProgramEndedCallback != null) { // submit to local.
             LOG.d("Found ProgramEndedCallBack, delegating...");
             onProgramEndedCallback.exec(makeCtxClone(ctx));
         }
