@@ -2,6 +2,7 @@ package com.voxmecanica.vdk.api;
 
 import com.voxmecanica.vdk.core.VoxRuntime;
 import com.voxmecanica.vdk.parser.Dialog;
+import com.voxmecanica.vdk.parser.DialogResult;
 
 import java.net.URI;
 import java.util.Map;
@@ -10,6 +11,7 @@ public interface DialogContext {
     public static final String KEY_RUNTIME = "key.runtime";
     public static final String KEY_PARAMS = "key.params";
     public static final String KEY_DIALOG = "key.dialog";
+    public static final String KEY_DIALOG_RESULT = "key.dialog.result";
     public static final String KEY_DIALOG_PROGRAM_COUNTER = "key.dialog.pc";
     public static final String KEY_DIALOG_REQUEST = "key.dialog.request";
     public static final String KEY_VOICE_REC_RESULT_CODE = "key.voice.rec.rc";
@@ -27,6 +29,8 @@ public interface DialogContext {
     VoxRuntime getRuntime();
     public void setDialog(Dialog d);
     public Dialog getDialog();
+    public DialogResult getDialogResult();
+    public void setDialogResult(DialogResult dr);
     public void setDialogUri(URI uri);
     public URI getDialogUri();
 }

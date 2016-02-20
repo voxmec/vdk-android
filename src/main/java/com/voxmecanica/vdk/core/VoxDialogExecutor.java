@@ -264,150 +264,7 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
     }
 
-    @Override
-    public void execute(String dialog) {
-
-    }
-    
-    @Override
-    // interjects new dialog into an existing dialog context (useful for error-handling)
-    public void interject(Dialog newDialog, DialogContext ctx){
-        LOG.d("Interjecting new dialog into existing context...");
-        if (newDialog == null || newDialog.getParts() == null || newDialog.getParts().size() == 0){
-            throw new VoxException ("A new  instance must be provided to interject.");
-        }
-        Dialog existingDialog = ctx.getDialog();
-        Dialog interjection   = newDialog;
-        // transfer properties from running dialog to interjection dialog
-        interjection.setProperties(existingDialog.getProperties());
-        List<Part> parts = existingDialog.getParts();
-        int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
-        if( pc > parts.size()){
-            throw new VoxException("DialogContext is in unexpected state. PC value bigger than size of dialog.");
-        }
-        if (parts.size() > 0){
-            List<Part> rest = parts.subList(pc, parts.size());
-            interjection.getParts().addAll(rest);
-            ctx.setDialog(interjection);
-        } else {
-            ctx.setDialog(interjection);
-        }
-         
-        ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(0));
-        execute(ctx);
-    }
-
-     // endProgram will generates a DialogResult.
-     // Sends a DialogResult to remote server if remote.
-    //  Returns result as callback param other wise.
-     private void endProgram(final DialogContext ctx) {
-              // TODO - create DialogResult here to carry the result of the dialog forward
-             DialogResult result = new DialogResult();
-         LOG.d("Dialog program ending...");
-         // is there a submission info
-         Dialog dialog = (Dialog) ctx.getValue(VoxDialogContext.KEY_DIALOG);
-         if (dialog != null && dialog.getSubmitUriProp() != null){ // submit remote
-            URI origUri = URI.create(dialog.getOrigUriProp());
-             URI submitUri;
-             if (origUri != null){
-                 submitUri = origUri.resolve(dialog.getSubmitUriProp());
-             }else{
-                 submitUri = URI.create(dialog.getSubmitUriProp());
-             }
-             ctx.putValue(DialogContext.KEY_DIALOG, dialog);
-             engine.sendMessage(Message.obtain(engine, Event.OP_FETCH_REMOTE_PROG, ctx));
-         }else if (onProgramEndedCallback != null) { // submit to local.
-            LOG.d("Found ProgramEndedCallBack, delegating...");
-            onProgramEndedCallback.exec(makeCtxClone(ctx));
-        }
-    }
-
-
-    
-    private void execute(DialogContext context) {
-        Dialog dialog = context.getDialog();
-        if (dialog != null && dialog.getParts().size() > 0) {
-            LOG.d("Executing VoxDialog " + dialog + " with " + dialog.getParts().size() + " parts.");
-            engine.sendMessage(Message.obtain(engine, Event.OP_START, context));
-        } else {
-            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, context));
-        }
-    }
-
-    private void clear(DialogContext ctx){
-        LOG.d("Clearing internal context...");
-        resetCounter(ctx);
-        dialogContext.getValues().clear();
-        dialogContext = null;
-    }
-    
-    private String matchesAsString(List<String> matches) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < matches.size(); i++) {
-            result.append(matches.get(i));
-            if (i < matches.size() - 1) {
-                result.append(";");
-            }
-        }
-        return result.toString();
-    }
-
-    private void resetCounter(DialogContext ctx) {
-        LOG.d("Resetting internal program counter to 0");
-        ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(0));
-    }
-
-    private void incCounter(DialogContext ctx) {
-        int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
-        pc = pc + 1;
-        ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(pc));
-        LOG.d("PC = " + pc);
-    }
-
-    private void loadNextPart(DialogContext ctx) {
-        List<DialogPart> parts = ctx.getDialog().getParts();
-        int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
-        if (pc < parts.size()) {
-            LOG.d("Loading next part at PC " + pc);
-            DialogPart currPart = parts.get(pc);
-            ctx.putValue(DialogContext.KEY_CURRENT_DIALOG_PART, currPart);
-            engine.sendMessage(Message.obtain(engine, Event.OP_EXEC_PART, ctx));
-        } else {
-            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, ctx));
-        }
-    }
-        
-    
-    // Starts recognizer listening.  Results handled by VoxRecognitionListener
-    private void startListening(DialogContext ctx) {
-       LOG.d("About to listen...");
-        dialogContext = ctx; // save copy.
-        
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-        intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        );
-
-        recognizer.startListening(intent);        
-    }
-    
-    // Called when recognition results are available from VoxRecognitionListener
-    private void collectRecognizedValues(final DialogContext ctx) {
-        LOG.d("Received speech recognition results.");
-        List<String> possibleMatches = (List<String>) ctx.getValue(DialogContext.KEY_VOICE_REC_MATCHES);
-        String matchesString = matchesAsString(possibleMatches);
-
-        if (ctx.getValue(DialogContext.KEY_CURRENT_INPUT_PART) != null) {
-            final Input input = (Input) ctx.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
-            input.setValues(possibleMatches);
-            ctx.getParameters().put(input.getParamName(), matchesString);
-            LOG.d(String.format("Voice input param received [%s = %s]", input.getParamName(), matchesString));
-        }
-        engine.sendMessage(Message.obtain(engine, Event.STAT_OK, ctx));
-    }
-
+    // TODO - Update to properly submit data from DialogResult.
     private void fetchRemoteProgram(DialogContext ctx) {
         DialogRequest dialogReq = (DialogRequest) ctx.getValue(DialogContext.KEY_DIALOG_REQUEST);
         String dialogStr;
@@ -443,8 +300,147 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
     }
 
+     @Override
+     public void execute(String dialog) {
+
+     }
+
+     private void execute(DialogContext context) {
+        Dialog dialog = context.getDialog();
+        if (dialog != null && dialog.getParts().size() > 0) {
+            LOG.d("Executing VoxDialog " + dialog + " with " + dialog.getParts().size() + " parts.");
+            context.setDialogResult(new DialogResult());
+            engine.sendMessage(Message.obtain(engine, Event.OP_START, context));
+        } else {
+            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, context));
+        }
+    }
+
+     private void loadNextPart(DialogContext ctx) {
+        List<DialogPart> parts = ctx.getDialog().getParts();
+        int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
+        if (pc < parts.size()) {
+            LOG.d("Loading next part at PC " + pc);
+            DialogPart currPart = parts.get(pc);
+            ctx.putValue(DialogContext.KEY_CURRENT_DIALOG_PART, currPart);
+            engine.sendMessage(Message.obtain(engine, Event.OP_EXEC_PART, ctx));
+        } else {
+            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, ctx));
+        }
+    }
+
+    @Override
+    // interjects new dialog into an existing dialog context (useful for error-handling)
+    public void interject(Dialog newDialog, DialogContext ctx){
+        LOG.d("Interjecting new dialog into existing context...");
+        if (newDialog == null || newDialog.getParts() == null || newDialog.getParts().size() == 0){
+            throw new VoxException ("A new  instance must be provided to interject.");
+        }
+        Dialog existingDialog = ctx.getDialog();
+        Dialog interjection   = newDialog;
+        // transfer properties from running dialog to interjection dialog
+        interjection.setProperties(existingDialog.getProperties());
+        List<Part> parts = existingDialog.getParts();
+        int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
+        if( pc > parts.size()){
+            throw new VoxException("DialogContext is in unexpected state. PC value bigger than size of dialog.");
+        }
+        if (parts.size() > 0){
+            List<Part> rest = parts.subList(pc, parts.size());
+            interjection.getParts().addAll(rest);
+            ctx.setDialog(interjection);
+        } else {
+            ctx.setDialog(interjection);
+        }
+         
+        ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(0));
+        execute(ctx);
+    }
+
+     // endProgram will generates a DialogResult.
+     // Sends a DialogResult to remote server if remote.
+    //  Returns result as callback param other wise.
+     private void endProgram(final DialogContext ctx) {
+         LOG.d("Dialog program ending...");
+         Dialog dialog = ctx.getDialog();
+         if (dialog != null && dialog.getSubmitUriProp() != null){
+             engine.sendMessage(Message.obtain(engine, Event.OP_FETCH_REMOTE_PROG, ctx));
+         }else if (onProgramEndedCallback != null) {
+            LOG.d("Found ProgramEndedCallBack, delegating...");
+            onProgramEndedCallback.exec(makeCtxClone(ctx));
+        }
+    }
+
+
+    
+   private void clear(DialogContext ctx){
+        LOG.d("Clearing internal context...");
+        resetCounter(ctx);
+        dialogContext.getValues().clear();
+        dialogContext = null;
+    }
+    
+    private String matchesAsString(List<String> matches) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < matches.size(); i++) {
+            result.append(matches.get(i));
+            if (i < matches.size() - 1) {
+                result.append(";");
+            }
+        }
+        return result.toString();
+    }
+
+    private void resetCounter(DialogContext ctx) {
+        LOG.d("Resetting internal program counter to 0");
+        ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(0));
+    }
+
+    private void incCounter(DialogContext ctx) {
+        int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
+        pc = pc + 1;
+        ctx.putValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER, new Integer(pc));
+        LOG.d("PC = " + pc);
+    }
+
+
+    
+    // Starts recognizer listening.  Results handled by VoxRecognitionListener
+    private void startListening(DialogContext ctx) {
+       LOG.d("About to listen...");
+        dialogContext = ctx; // save copy.
+        
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
+        intent.putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        );
+
+        recognizer.startListening(intent);        
+    }
+    
+    // Called when recognition results are available from VoxRecognitionListener
+    private void collectRecognizedValues(final DialogContext ctx) {
+        LOG.d("Received speech recognition results.");
+        List<String> possibleMatches = (List<String>) ctx.getValue(DialogContext.KEY_VOICE_REC_MATCHES);
+        String matchesString = matchesAsString(possibleMatches);
+
+        if (ctx.getValue(DialogContext.KEY_CURRENT_INPUT_PART) != null) {
+            final Part part = (Part) ctx.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
+            DialogResult result = ctx.getDialogResult();
+            Param param = new Param();
+            param.setId(part.getId());
+            param.setValue(matchesString);
+            result.getParams().add(param);
+            LOG.d(String.format("Voice input param received [%s = %s]", input.getParamName(), matchesString));
+        }
+        engine.sendMessage(Message.obtain(engine, Event.STAT_OK, ctx));
+    }
+
+
     private void render(final DialogContext context) {
-        final DialogPart part = (DialogPart) context.getValue(DialogContext.KEY_CURRENT_DIALOG_PART);
+        final Part part = (Part) context.getValue(DialogContext.KEY_CURRENT_DIALOG_PART);
         if (part == null) {
             LOG.d("DialogExecutor.render() - Missing expected part.  Sending program termination.");
             engine.sendMessage(Message.obtain(engine, Event.OP_STOP, context));            
@@ -460,10 +456,9 @@ public class VoxDialogExecutor implements DialogExecutor {
                     onDialogPartRenderingCallback.exec(part);
                 }
             });
-            
         }
 
-        switch (part.getMetaPart()) {
+        switch (part.getType()) {
             case SPEAK:
                 SpeakablePart sp = (SpeakablePart) part;
                 engine.post(new SpeechRenderer(context, sp, new PartRenderer.OnCompleted() {
@@ -476,7 +471,7 @@ public class VoxDialogExecutor implements DialogExecutor {
                 }));
                 break;
 
-            case PLAY:
+            case PLAYBACK:
                 PlayablePart pl = (PlayablePart) part;
                 engine.post(new MediaRenderer(context, pl, new PartRenderer.OnCompleted() {
                     @Override
@@ -488,7 +483,7 @@ public class VoxDialogExecutor implements DialogExecutor {
                 }));
                 break;
 
-            case PAUSE:
+            case DIRECTIVE:
                 PausablePart ps = (PausablePart) part;
                 engine.post(new PauseRenderer(context, ps, new PartRenderer.OnCompleted() {
                     @Override
@@ -498,6 +493,7 @@ public class VoxDialogExecutor implements DialogExecutor {
                 }));
                 break;
 
+            // TODO - Add code to process param (at end of program)
             case PARAM:
                 ParameterPart prm = (ParameterPart) part;
                 context.getParameters().put(prm.getName(), prm.getValue());
@@ -506,13 +502,12 @@ public class VoxDialogExecutor implements DialogExecutor {
 
             case INPUT:
                 // rendering done by Android platform via Intent.
-                final Input in = (Input) part;
-                context.putValue(DialogContext.KEY_CURRENT_INPUT_PART, in);
+                context.putValue(DialogContext.KEY_CURRENT_INPUT_PART, part);
                 if (onSpeechInputRequested != null) {
                     engine.post(new Runnable(){
                         @Override
                         public void run() {
-                            onSpeechInputRequested.exec(makeCtxClone(context), in);
+                            onSpeechInputRequested.exec(makeCtxClone(context), part);
                         }
                     });
                 }

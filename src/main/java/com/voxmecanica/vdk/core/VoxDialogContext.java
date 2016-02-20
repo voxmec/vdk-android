@@ -2,6 +2,7 @@ package com.voxmecanica.vdk.core;
 
 import com.voxmecanica.vdk.parser.Dialog;
 import com.voxmecanica.vdk.api.DialogContext;
+import com.voxmecanica.vdk.parser.DialogResult;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -60,6 +61,16 @@ public class VoxDialogContext implements DialogContext {
     @Override
     public Dialog getDialog() {
         return (Dialog) context.get(DialogContext.KEY_DIALOG);
+    }
+
+    @Override
+    public void setDialogResult(DialogResult d) {
+        context.put(DialogContext.KEY_DIALOG_RESULT, d);
+    }
+
+    @Override
+    public DialogResult getDialogResult() {
+        return (DialogResult) context.get(DialogContext.KEY_DIALOG_RESULT);
     }
 
     @Override
