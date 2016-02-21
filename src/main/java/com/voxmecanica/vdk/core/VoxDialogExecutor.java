@@ -266,11 +266,20 @@ public class VoxDialogExecutor implements DialogExecutor {
 
     // TODO - Update to properly submit data from DialogResult.
     private void fetchRemoteProgram(DialogContext ctx) {
-        DialogRequest dialogReq = (DialogRequest) ctx.getValue(DialogContext.KEY_DIALOG_REQUEST);
+        Dialog dialog = ctx.getDialog();
+        DialogResult result = ctx.getDialogResult();
+
         String dialogStr;
         try {
-            String url = dialogReq.getLocation().toString();
-            String method = dialogReq.getMethod();
+            String url = result.getProperties().get(Dialog.Prop.SUBMIT_URI);
+            if (dialog.getOrigUriProp() != null) {
+                URI origUri = URI.create(dialog.getOrigUriProp());
+                url = origUri.resolve(url).toString();
+            }
+            String method = result.getProperties().get(Dialog.Prop.SUBMIT_METHOD);
+            if (method == null){
+                method = "GET";
+            }
             dialogStr = HttpService.ResponseAsString(
                     runtime.getHttpService().serve(url, ctx.getParameters(), method)
             );
@@ -283,9 +292,7 @@ public class VoxDialogExecutor implements DialogExecutor {
 
         if (dialogStr.length() > 0) {
             try {
-                VoxDialog dialog = VoxDialogParser.parse(dialogStr);
-                dialog.setOriginUri(dialogReq.getLocation());
-                ctx.setDialogUri(dialogReq.getLocation());
+                dialog = runtime.getDialogParser().parse(dialogStr);
                 ctx.setDialog(dialog);
                 execute(ctx); // start dialog program.
             } catch (Exception ex) {

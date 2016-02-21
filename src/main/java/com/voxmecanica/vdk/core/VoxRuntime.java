@@ -13,6 +13,8 @@ import com.voxmecanica.vdk.VoxException;
 import com.voxmecanica.vdk.api.DialogExecutor;
 import com.voxmecanica.vdk.http.HttpService;
 import com.voxmecanica.vdk.logging.Logger;
+import com.voxmecanica.vdk.parser.DialogParser;
+
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,6 +30,7 @@ public class VoxRuntime {
     private VoxDialogExecutor dialogExec;
     private SpeechRecognizer recognizer;
     private ConnectivityManager connManager;
+    private DialogParser parser;
 
     private Looper runtimeLooper;
     private RuntimeHandler eventBus;
@@ -121,7 +124,12 @@ public class VoxRuntime {
         assertReadiness();
         return httpService;
     }
-    
+
+    protected DialogParser getDialogParser() {
+        assertReadiness();
+        return parser;
+    }
+
     protected SpeechRecognizer getSpeechRecognizer() {
         return recognizer;
     }
@@ -174,6 +182,7 @@ public class VoxRuntime {
         LOG.d("Initializing runtime resources...");
         connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         httpService = new HttpService();
+        parser = new DialogParser();
         mediaPlayer = new VoxMediaPlayer();
         recognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecEnabled = (SpeechRecognizer.isRecognitionAvailable(context));

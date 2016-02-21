@@ -34,26 +34,26 @@ public class Dialog {
 
     public String getOrigUriProp() {
         if (getProperties() != null){
-            return getProperties().get(PropName.ORIG_URI);
+            return getProperties().get(Prop.ORIG_URI);
         }
         return null;
     }
 
     public String getSubmitUriProp(){
         if (getProperties() != null){
-            return getProperties().get(PropName.SUBMIT_URI);
+            return getProperties().get(Prop.SUBMIT_URI);
         }
         return null;
     }
 
     public String getSubmintMethodProp(){
         if (getProperties() != null){
-            return getProperties().get(PropName.SUBMIT_METHOD);
+            return getProperties().get(Prop.SUBMIT_METHOD);
         }
         return null;
     }
 
-    public static class PropName {
+    public static class Prop {
         public static final String ORIG_URI = "originUri";
         public static final String SUBMIT_URI = "submitUri";
         public static final String SUBMIT_METHOD = "submitMethod";
