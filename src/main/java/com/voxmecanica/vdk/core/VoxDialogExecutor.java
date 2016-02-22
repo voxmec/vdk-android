@@ -68,8 +68,9 @@ public class VoxDialogExecutor implements DialogExecutor {
         if (runtime == null) {
             throw new IllegalArgumentException("VoxDialogExecutor missing a valid runtime instance.");
         }
+        dialogContext = new VoxDialogContext(runtime);
         recognizer = runtime.getSpeechRecognizer();
-        recognizer.setRecognitionListener(new VoxRecognitionListener());
+        recognizer.setRecognitionListener(new VoxRecognitionListener(dialogContext));
         engineLooper = runtime.getApplicationContext().getMainLooper();
         engine = new EngineHandler(engineLooper);
     }
@@ -129,6 +130,11 @@ public class VoxDialogExecutor implements DialogExecutor {
     }
     
     private class VoxRecognitionListener implements RecognitionListener {
+        private DialogContext context;
+
+        public VoxRecognitionListener(DialogContext ctx){
+            context = ctx;
+        }
 
         @Override
         public void onReadyForSpeech(Bundle bundle) {}
@@ -155,9 +161,9 @@ public class VoxDialogExecutor implements DialogExecutor {
 
             //dispatch error
             if (onSpeechInputError != null) {
-                Input input = (Input) cloned.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
+                Part part = (Part) cloned.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
                 Integer error = (Integer)cloned.getValue(DialogContext.KEY_VOICE_REC_ERROR);
-                onSpeechInputError.exec(cloned, input, error);
+                onSpeechInputError.exec(cloned, part, error);
             }
             
         }
@@ -172,11 +178,11 @@ public class VoxDialogExecutor implements DialogExecutor {
             
             if (onSpeechInputRecognized != null) {
                 final DialogContext cloned = makeCtxClone(dialogContext);
-                final Input input = (Input)cloned.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
+                final Part part = (Part)cloned.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
                 engine.post(new Runnable() {
                     @Override
                     public void run() {
-                        onSpeechInputRecognized.exec(cloned, input);
+                        onSpeechInputRecognized.exec(cloned, part);
                     }
                 });
             }
@@ -237,9 +243,8 @@ public class VoxDialogExecutor implements DialogExecutor {
      */
     @Override
     public void execute(Dialog dialog) {
-        DialogContext context = new VoxDialogContext(runtime);
-        context.setDialog(dialog);
-        execute(context);    
+       dialogContext.setDialog(dialog);
+        execute(dialogContext);
     }
 
     /**

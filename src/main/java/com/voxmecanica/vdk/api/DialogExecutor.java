@@ -2,6 +2,7 @@ package com.voxmecanica.vdk.api;
 
 import java.net.URI;
 import com.voxmecanica.vdk.parser.Dialog;
+import com.voxmecanica.vdk.parser.Part;
 
 public interface DialogExecutor {
     public void execute(Dialog dialog);
@@ -17,10 +18,10 @@ public interface DialogExecutor {
             public void exec(int e);
         }
         public static interface OnDialogPartRendering extends Callback {
-            public void exec(DialogPart dp);
+            public void exec(Part dp);
         }
         public static interface OnDialogPartRendered extends Callback{
-            public void exec(DialogPart dp);
+            public void exec(Part dp);
         }
         public static interface OnProgramStarted extends Callback{
             public void exec(DialogContext ctx);
@@ -29,13 +30,13 @@ public interface DialogExecutor {
             public void exec(DialogContext ctx);
         }
         public static interface OnSpeechInputRecognized extends Callback{
-            public void exec(DialogContext ctx, InputPart part);
+            public void exec(DialogContext ctx, Part part);
         }
         public static interface OnSpeechInputRequested extends Callback{
-            public void exec(DialogContext ctx, InputPart part);
+            public void exec(DialogContext ctx, Part part);
         }
         public static interface OnSpeechInputError extends Callback{
-            public void exec(DialogContext ctx, InputPart part, int error);
+            public void exec(DialogContext ctx, Part part, int error);
         }
     }
 }
