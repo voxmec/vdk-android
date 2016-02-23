@@ -29,6 +29,7 @@ import com.voxmecanica.vdk.parser.Part;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class that implements the state machine for the Voice Dialog.
@@ -70,7 +71,7 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
         dialogContext = new VoxDialogContext(runtime);
         recognizer = runtime.getSpeechRecognizer();
-        recognizer.setRecognitionListener(new VoxRecognitionListener(dialogContext));
+        recognizer.setRecognitionListener(new VoxRecognitionListener());
         engineLooper = runtime.getApplicationContext().getMainLooper();
         engine = new EngineHandler(engineLooper);
     }
@@ -130,11 +131,6 @@ public class VoxDialogExecutor implements DialogExecutor {
     }
     
     private class VoxRecognitionListener implements RecognitionListener {
-        private DialogContext context;
-
-        public VoxRecognitionListener(DialogContext ctx){
-            context = ctx;
-        }
 
         @Override
         public void onReadyForSpeech(Bundle bundle) {}
@@ -162,8 +158,7 @@ public class VoxDialogExecutor implements DialogExecutor {
             //dispatch error
             if (onSpeechInputError != null) {
                 Part part = (Part) cloned.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
-                Integer error = (Integer)cloned.getValue(DialogContext.KEY_VOICE_REC_ERROR);
-                onSpeechInputError.exec(cloned, part, error);
+                onSpeechInputError.exec(cloned, part, i);
             }
             
         }
@@ -172,13 +167,22 @@ public class VoxDialogExecutor implements DialogExecutor {
         public void onResults(Bundle results) {
             LOG.d("RecognitionListener.OnResults triggered...");
             ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-            dialogContext.putValue(DialogContext.KEY_VOICE_REC_MATCHES, matches);
-            float[] scores = results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
-            dialogContext.putValue(DialogContext.KEY_VOICE_REC_SCORES, scores);
-            
+            String matchesStr = matchesAsString(matches);
+            float[] scores  = results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES);
+            final Part part = (Part) dialogContext.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
+
+            if (part != null) {
+                DialogResult result = dialogContext.getDialogResult();
+                Param param = new Param();
+                param.setId(part.getId());
+                param.setValue(matchesStr);
+                result.getParams().add(param);
+                LOG.d(String.format("Voice input [%s = %s]", part.getType(), matchesStr));
+            }
+
+            // emit recognized input to api client.
             if (onSpeechInputRecognized != null) {
                 final DialogContext cloned = makeCtxClone(dialogContext);
-                final Part part = (Part)cloned.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
                 engine.post(new Runnable() {
                     @Override
                     public void run() {
@@ -186,8 +190,9 @@ public class VoxDialogExecutor implements DialogExecutor {
                     }
                 });
             }
-        
-            collectRecognizedValues(dialogContext);
+
+            // continue
+            engine.sendMessage(Message.obtain(engine, Event.STAT_OK, dialogContext));
         }
 
         @Override
@@ -274,14 +279,26 @@ public class VoxDialogExecutor implements DialogExecutor {
         Dialog dialog = ctx.getDialog();
         DialogResult result = ctx.getDialogResult();
 
+        if (result == null || result.getProperties() == null){
+            LOG.d("WARNING: Unable to fetch. DialogResult properties are empty. Ending.");
+            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, ctx));
+            return;
+        }
+
         String dialogStr;
         try {
-            String url = result.getProperties().get(Dialog.Prop.SUBMIT_URI);
+            Map<String,String> props = result.getProperties();
+            String url = props.get(Dialog.Prop.SUBMIT_URI);
             if (dialog.getOrigUriProp() != null) {
                 URI origUri = URI.create(dialog.getOrigUriProp());
                 url = origUri.resolve(url).toString();
             }
-            String method = result.getProperties().get(Dialog.Prop.SUBMIT_METHOD);
+
+            // TODO - Prepare request parameters properly.
+            // TODO - Map each DialogParam to request param
+            // TODO - If DialogResult.Format = JSON, send JSON
+
+            String method = props.get(Dialog.Prop.SUBMIT_METHOD);
             if (method == null){
                 method = "GET";
             }
@@ -420,7 +437,7 @@ public class VoxDialogExecutor implements DialogExecutor {
     // Starts recognizer listening.  Results handled by VoxRecognitionListener
     private void startListening(DialogContext ctx) {
        LOG.d("About to listen...");
-        dialogContext = ctx; // save copy.
+        dialogContext = ctx; // save reference.
         
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
@@ -431,25 +448,6 @@ public class VoxDialogExecutor implements DialogExecutor {
 
         recognizer.startListening(intent);        
     }
-    
-    // Called when recognition results are available from VoxRecognitionListener
-    private void collectRecognizedValues(final DialogContext ctx) {
-        LOG.d("Received speech recognition results.");
-        List<String> possibleMatches = (List<String>) ctx.getValue(DialogContext.KEY_VOICE_REC_MATCHES);
-        String matchesString = matchesAsString(possibleMatches);
-
-        if (ctx.getValue(DialogContext.KEY_CURRENT_INPUT_PART) != null) {
-            final Part part = (Part) ctx.getValue(DialogContext.KEY_CURRENT_INPUT_PART);
-            DialogResult result = ctx.getDialogResult();
-            Param param = new Param();
-            param.setId(part.getId());
-            param.setValue(matchesString);
-            result.getParams().add(param);
-            LOG.d(String.format("Voice input param received [%s = %s]", input.getParamName(), matchesString));
-        }
-        engine.sendMessage(Message.obtain(engine, Event.STAT_OK, ctx));
-    }
-
 
     private void render(final DialogContext context) {
         final Part part = (Part) context.getValue(DialogContext.KEY_CURRENT_DIALOG_PART);
