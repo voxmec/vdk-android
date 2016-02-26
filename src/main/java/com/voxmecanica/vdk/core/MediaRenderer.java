@@ -2,7 +2,6 @@ package com.voxmecanica.vdk.core;
 
 import com.voxmecanica.vdk.api.DialogContext;
 import com.voxmecanica.vdk.api.PartRenderer;
-import com.voxmecanica.vdk.api.PlayablePart;
 import com.voxmecanica.vdk.logging.Logger;
 import com.voxmecanica.vdk.parser.Dialog;
 import com.voxmecanica.vdk.parser.Part;
