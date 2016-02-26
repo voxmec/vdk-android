@@ -49,7 +49,6 @@ public class VoxDialogExecutor implements DialogExecutor {
     private VoxDialogExecutor.Callback.OnSpeechInputRequested onSpeechInputRequested;
     private VoxDialogExecutor.Callback.OnSpeechInputRecognized onSpeechInputRecognized;
     private VoxDialogExecutor.Callback.OnSpeechInputError onSpeechInputError;
-    private DialogSubmissionRequest DialogRequest;
 
     private static class Event {
 
