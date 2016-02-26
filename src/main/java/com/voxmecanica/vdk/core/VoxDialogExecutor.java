@@ -256,18 +256,22 @@ public class VoxDialogExecutor implements DialogExecutor {
      */
     @Override
     public void execute(URI uri) {
-        DialogContext context = new VoxDialogContext(runtime);
         if (uri != null) {
             LOG.i("Executing dialog from URI " + uri.toASCIIString());
-            DialogRequest dialogReq = new DialogSubmissionRequest(uri, HttpService.Config.DEFAULT_SUBMIT_METHOD);
-            context.putValue(VoxDialogContext.KEY_DIALOG_REQUEST, dialogReq);
-            // load and execute remote dialog
-            if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
-                engine.sendMessage(Message.obtain(engine, Event.OP_FETCH_REMOTE_PROG, context));
+            try{
+               String dialogStr = HttpService.ResponseAsString(
+                    runtime.getHttpService().serve(uri.toString(), null, "GET")
+               );
+               execute(dialogStr);
+
+            }catch(Exception ex){
+                throw new VoxException(
+                    VoxException.ErrorType.HttpError,
+                    "Encountered error while fetching remote dialog."
+                );
             }
         } else {
             LOG.d("Expected dialog URI is null.  Terminating.");
-            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, context));
         }
     }
 
