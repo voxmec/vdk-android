@@ -465,8 +465,7 @@ public class VoxDialogExecutor implements DialogExecutor {
 
         switch (part.getType()) {
             case SPEAK:
-                SpeakablePart sp = (SpeakablePart) part;
-                engine.post(new SpeechRenderer(context, sp, new PartRenderer.OnCompleted() {
+                engine.post(new SpeechRenderer(context, part, new PartRenderer.OnCompleted() {
                     @Override
                     public void completed(int result) {
                         if (result == PartRenderer.RENDERING_OK) {
@@ -477,8 +476,7 @@ public class VoxDialogExecutor implements DialogExecutor {
                 break;
 
             case PLAYBACK:
-                PlayablePart pl = (PlayablePart) part;
-                engine.post(new MediaRenderer(context, pl, new PartRenderer.OnCompleted() {
+                engine.post(new MediaRenderer(context, part, new PartRenderer.OnCompleted() {
                     @Override
                     public void completed(int result) {
                         if (result == PartRenderer.RENDERING_OK) {

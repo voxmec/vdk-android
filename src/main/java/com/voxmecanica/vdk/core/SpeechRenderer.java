@@ -4,24 +4,24 @@ import android.speech.tts.UtteranceProgressListener;
 
 import com.voxmecanica.vdk.api.DialogContext;
 import com.voxmecanica.vdk.api.PartRenderer;
-import com.voxmecanica.vdk.api.SpeakablePart;
 import com.voxmecanica.vdk.logging.Logger;
+import com.voxmecanica.vdk.parser.Part;
 
 public class SpeechRenderer implements PartRenderer{
     private Logger LOG = new Logger("SpeechRenderer");
 	private PartRenderer.OnCompleted onCompletedEvent;
-	private SpeakablePart speakablePart;
+	private Part part;
 	private VoxRuntime runtime;
 	
-	public SpeechRenderer(DialogContext ctx, SpeakablePart part, PartRenderer.OnCompleted onCompleted){
+	public SpeechRenderer(DialogContext ctx, Part part, PartRenderer.OnCompleted onCompleted){
 		runtime = ctx.getRuntime();
-        speakablePart = part;
+        this.part = part;
 		onCompletedEvent = onCompleted;
 	}
 	
 	@Override
 	public void run() {
-		String textToSpeak = speakablePart.getTextToSpeak();
+		String textToSpeak = part.getText();
 		LOG.d("Rendering text [" + textToSpeak + "]");
 		
 		runtime.speakText(textToSpeak, new UtteranceProgressListener(){
