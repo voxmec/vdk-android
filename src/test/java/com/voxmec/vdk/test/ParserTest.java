@@ -64,7 +64,7 @@ public class ParserTest {
                 "\"value\":\"Toronto\"" +
                "}";
 
-        Param param = gson.fromJson(json, Param.class);
+        DialogParam param = gson.fromJson(json, DialogParam.class);
         assertEquals(param.getId(), "city_name");
         assertEquals(param.getValue(), "Toronto");
     }

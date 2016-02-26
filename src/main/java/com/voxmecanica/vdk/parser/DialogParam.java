@@ -1,6 +1,6 @@
 package com.voxmecanica.vdk.parser;
 
-public class Param {
+public class DialogParam {
     private String id;
     private String value;
 
@@ -25,7 +25,7 @@ public class Param {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Param param = (Param) o;
+        DialogParam param = (DialogParam) o;
 
         if (id != null ? !id.equals(param.id) : param.id != null) return false;
         return value != null ? value.equals(param.value) : param.value == null;

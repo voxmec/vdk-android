@@ -1,18 +1,32 @@
 package com.voxmecanica.vdk.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DialogResult {
-    private java.util.ArrayList<Param> params;
-    private java.util.Map<String,String> properties;
+    private List<DialogParam> params;
+    private Map<String,String> properties;
 
-    public ArrayList<Param> getParams() {
+    public List<DialogParam> getParams() {
         return params;
     }
 
-    public void setParams(ArrayList<Param> params) {
+    public void setParams(List<DialogParam> params) {
         this.params = params;
+    }
+
+    public Map<String, String> getParamsAsMap() {
+        if (params == null){
+            return null;
+        }
+
+        Map<String, String> result = new HashMap<String, String>();
+        for (DialogParam param : params){
+            result.put(param.getId(), param.getValue());
+        }
+        return result;
     }
 
     public Map<String, String> getProperties() {
@@ -22,4 +36,5 @@ public class DialogResult {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
+
 }

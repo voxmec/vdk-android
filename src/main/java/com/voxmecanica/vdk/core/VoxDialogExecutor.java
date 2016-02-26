@@ -9,8 +9,6 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
-import com.sun.tools.internal.jxc.ap.Const;
-import com.voxmecanica.vdk.Constants;
 import com.voxmecanica.vdk.VoxException;
 import com.voxmecanica.vdk.parser.*;
 import com.voxmecanica.vdk.api.DialogContext;
@@ -173,7 +171,7 @@ public class VoxDialogExecutor implements DialogExecutor {
 
             if (part != null) {
                 DialogResult result = dialogContext.getDialogResult();
-                Param param = new Param();
+                DialogParam param = new DialogParam();
                 param.setId(part.getId());
                 param.setValue(matchesStr);
                 result.getParams().add(param);
@@ -274,6 +272,24 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
     }
 
+      @Override
+     public void execute(String dialogJson) {
+          Dialog dialog = runtime.getDialogParser().parse(dialogJson);
+          execute(dialog);
+     }
+
+     private void execute(DialogContext context) {
+        Dialog dialog = context.getDialog();
+        if (dialog != null && dialog.getParts().size() > 0) {
+            LOG.d("Executing VoxDialog " + dialog + " with " + dialog.getParts().size() + " parts.");
+            context.setDialogResult(new DialogResult());
+            engine.sendMessage(Message.obtain(engine, Event.OP_START, context));
+        } else {
+            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, context));
+        }
+    }
+
+
     // TODO - Update to properly submit data from DialogResult.
     private void fetchRemoteProgram(DialogContext ctx) {
         Dialog dialog = ctx.getDialog();
@@ -294,8 +310,6 @@ public class VoxDialogExecutor implements DialogExecutor {
                 url = origUri.resolve(url).toString();
             }
 
-            // TODO - Prepare request parameters properly.
-            // TODO - Map each DialogParam to request param
             // TODO - If DialogResult.Format = JSON, send JSON
 
             String method = props.get(Dialog.Prop.SUBMIT_METHOD);
@@ -303,7 +317,7 @@ public class VoxDialogExecutor implements DialogExecutor {
                 method = "GET";
             }
             dialogStr = HttpService.ResponseAsString(
-                    runtime.getHttpService().serve(url, ctx.getParameters(), method)
+                    runtime.getHttpService().serve(url, result.getParamsAsMap(), method)
             );
         } catch (Exception ex) {
             throw new VoxException(
@@ -314,9 +328,7 @@ public class VoxDialogExecutor implements DialogExecutor {
 
         if (dialogStr.length() > 0) {
             try {
-                dialog = runtime.getDialogParser().parse(dialogStr);
-                ctx.setDialog(dialog);
-                execute(ctx); // start dialog program.
+                execute(dialogStr); // start new dialog.
             } catch (Exception ex) {
                 throw new VoxException(
                         VoxException.ErrorType.InternalError,
@@ -329,28 +341,13 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
     }
 
-     @Override
-     public void execute(String dialog) {
-
-     }
-
-     private void execute(DialogContext context) {
-        Dialog dialog = context.getDialog();
-        if (dialog != null && dialog.getParts().size() > 0) {
-            LOG.d("Executing VoxDialog " + dialog + " with " + dialog.getParts().size() + " parts.");
-            context.setDialogResult(new DialogResult());
-            engine.sendMessage(Message.obtain(engine, Event.OP_START, context));
-        } else {
-            engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, context));
-        }
-    }
 
      private void loadNextPart(DialogContext ctx) {
-        List<DialogPart> parts = ctx.getDialog().getParts();
+        List<Part> parts = ctx.getDialog().getParts();
         int pc = ((Integer)ctx.getValue(DialogContext.KEY_DIALOG_PROGRAM_COUNTER)).intValue();
         if (pc < parts.size()) {
             LOG.d("Loading next part at PC " + pc);
-            DialogPart currPart = parts.get(pc);
+            Part currPart = parts.get(pc);
             ctx.putValue(DialogContext.KEY_CURRENT_DIALOG_PART, currPart);
             engine.sendMessage(Message.obtain(engine, Event.OP_EXEC_PART, ctx));
         } else {
@@ -388,7 +385,7 @@ public class VoxDialogExecutor implements DialogExecutor {
 
      // endProgram will generates a DialogResult.
      // Sends a DialogResult to remote server if remote.
-    //  Returns result as callback param other wise.
+     // Returns result as callback param other wise.
      private void endProgram(final DialogContext ctx) {
          LOG.d("Dialog program ending...");
          Dialog dialog = ctx.getDialog();
@@ -400,8 +397,6 @@ public class VoxDialogExecutor implements DialogExecutor {
         }
     }
 
-
-    
    private void clear(DialogContext ctx){
         LOG.d("Clearing internal context...");
         resetCounter(ctx);

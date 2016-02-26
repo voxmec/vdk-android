@@ -6,7 +6,7 @@ import java.util.Map;
 public class Dialog {
     private Map<String,String> properties;
     private ArrayList<Part> parts;
-    private ArrayList<Param> params;
+    private ArrayList<DialogParam> params;
 
     public Map<String, String> getProperties() {
         return properties;
@@ -24,11 +24,11 @@ public class Dialog {
         this.parts = parts;
     }
 
-    public ArrayList<Param> getParams() {
+    public ArrayList<DialogParam> getParams() {
         return params;
     }
 
-    public void setParams(ArrayList<Param> params) {
+    public void setParams(ArrayList<DialogParam> params) {
         this.params = params;
     }
 
