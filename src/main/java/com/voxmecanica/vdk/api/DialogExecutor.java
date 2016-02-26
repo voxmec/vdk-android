@@ -9,7 +9,6 @@ public interface DialogExecutor {
     public void execute(URI uriDialog);
     public void execute(String dialog);
     public void interject(Dialog dialog, DialogContext ctx);
-    public void submit(DialogContext ctx);
     
     public void setCallbacks(DialogExecutor.Callback ... callbacks);
 

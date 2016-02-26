@@ -38,22 +38,16 @@ public class ParserTest {
     }
 
     @Test
-    public void parseTest_Part_Directives() {
+    public void parseTest_Part_Pause() {
         Gson gson = new Gson();
         String json = "{" +
-                "\"type\":\"DIRECTIVE\", " +
-                "\"pause\":2000," +
-                "\"rate\":300," +
-                "\"pitch\":200," +
-                "\"voice\":\"James\"" +
+                "\"type\":\"PAUSE\", " +
+                "\"pause\":2000" +
                 "}";
 
         Part part = gson.fromJson(json, Part.class);
-        assertEquals(part.getType(), PartType.DIRECTIVE);
+        assertEquals(part.getType(), PartType.PAUSE);
         assertEquals(part.getPause(), 2000);
-        assertEquals(part.getRate(), 300);
-        assertEquals(part.getPitch(), 200);
-        assertEquals(part.getVoice(), "James");
     }
 
     @Test

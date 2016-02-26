@@ -8,6 +8,7 @@ public enum PartType {
     @SerializedName("SPEAK")SPEAK,
     @SerializedName("PLAYBACK")PLAYBACK,
     @SerializedName("DISPLAY")DISPLAY,
-    @SerializedName("DIRECTIVE")DIRECTIVE
+    @SerializedName("PAUSE")PAUSE,
+    @SerializedName("END")END
 }
 

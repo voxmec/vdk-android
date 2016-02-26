@@ -1,12 +1,13 @@
 package com.voxmecanica.vdk.parser;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class Dialog {
     private Map<String,String> properties;
-    private ArrayList<Part> parts;
-    private ArrayList<DialogParam> params;
+    private List<Part> parts;
+    private List<DialogParam> params;
 
     public Map<String, String> getProperties() {
         return properties;
@@ -16,15 +17,15 @@ public class Dialog {
         this.properties = properties;
     }
 
-    public ArrayList<Part> getParts() {
+    public List<Part> getParts() {
         return parts;
     }
 
-    public void setParts(ArrayList<Part> parts) {
+    public void setParts(List<Part> parts) {
         this.parts = parts;
     }
 
-    public ArrayList<DialogParam> getParams() {
+    public List<DialogParam> getParams() {
         return params;
     }
 
@@ -58,5 +59,6 @@ public class Dialog {
         public static final String SUBMIT_URI = "submitUri";
         public static final String SUBMIT_METHOD = "submitMethod";
         public static final String SUBMIT_FORMAT = "submitFormat";
+
     }
 }

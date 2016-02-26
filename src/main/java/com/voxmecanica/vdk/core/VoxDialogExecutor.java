@@ -282,6 +282,8 @@ public class VoxDialogExecutor implements DialogExecutor {
         Dialog dialog = context.getDialog();
         if (dialog != null && dialog.getParts().size() > 0) {
             LOG.d("Executing VoxDialog " + dialog + " with " + dialog.getParts().size() + " parts.");
+            DialogResult dr = new DialogResult();
+            dr.setParams(dialog.getParams());
             context.setDialogResult(new DialogResult());
             engine.sendMessage(Message.obtain(engine, Event.OP_START, context));
         } else {
@@ -486,21 +488,13 @@ public class VoxDialogExecutor implements DialogExecutor {
                 }));
                 break;
 
-            case DIRECTIVE:
-                PausablePart ps = (PausablePart) part;
-                engine.post(new PauseRenderer(context, ps, new PartRenderer.OnCompleted() {
+            case PAUSE:
+                engine.post(new PauseRenderer(context, part, new PartRenderer.OnCompleted() {
                     @Override
                     public void completed(int result) {
                         engine.sendMessage(Message.obtain(engine, Event.STAT_OK, context));
                     }
                 }));
-                break;
-
-            // TODO - Add code to process param (at end of program)
-            case PARAM:
-                ParameterPart prm = (ParameterPart) part;
-                context.getParameters().put(prm.getName(), prm.getValue());
-                engine.sendMessage(Message.obtain(engine, Event.STAT_OK, context));
                 break;
 
             case INPUT:
@@ -519,13 +513,13 @@ public class VoxDialogExecutor implements DialogExecutor {
                 
                 break;
 
-            case TERMINATION:
-                LOG.d("Encoutered a termination.  Stopping program.");
+            case END:
+                LOG.d("Encountered END.  Stopping program.");
                 engine.sendMessage(Message.obtain(engine, Event.OP_PROG_END, context));
                 break;
 
             default:
-                LOG.d("Unable to process dialog part " + part.getMetaPart().label() + ". It may be an unsupported dialog tag.");
+                LOG.d("Unable to process part " + part.getType().toString() + ", unsupported.");
                 engine.sendMessage(Message.obtain(engine, Event.STAT_OK, context)); // move to next op
                 break;
         }
