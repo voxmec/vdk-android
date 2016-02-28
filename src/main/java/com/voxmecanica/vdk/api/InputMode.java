@@ -1,4 +1,4 @@
-package com.voxmecanica.vdk.parser;
+package com.voxmecanica.vdk.api;
 
 import com.google.gson.annotations.SerializedName;
 

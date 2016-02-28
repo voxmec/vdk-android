@@ -1,4 +1,4 @@
-package com.voxmecanica.vdk.parser;
+package com.voxmecanica.vdk.api;
 
 public class DialogParam {
     private String id;

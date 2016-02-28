@@ -1,6 +1,7 @@
 package com.voxmecanica.vdk.parser;
 
 import com.google.gson.Gson;
+import com.voxmecanica.vdk.api.Dialog;
 
 public class DialogParser {
     private Gson gson;

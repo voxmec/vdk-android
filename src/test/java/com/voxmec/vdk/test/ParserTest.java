@@ -1,6 +1,7 @@
 package com.voxmec.vdk.test;
 
 import com.google.gson.Gson;
+import com.voxmecanica.vdk.api.*;
 import com.voxmecanica.vdk.parser.*;
 import org.junit.Test;
 

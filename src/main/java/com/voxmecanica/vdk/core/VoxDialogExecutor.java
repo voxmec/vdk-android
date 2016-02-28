@@ -10,13 +10,9 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
 import com.voxmecanica.vdk.VoxException;
-import com.voxmecanica.vdk.parser.*;
-import com.voxmecanica.vdk.api.DialogContext;
-import com.voxmecanica.vdk.api.DialogExecutor;
-import com.voxmecanica.vdk.api.PartRenderer;
+import com.voxmecanica.vdk.api.*;
 import com.voxmecanica.vdk.http.HttpService;
 import com.voxmecanica.vdk.logging.Logger;
-import com.voxmecanica.vdk.parser.Part;
 
 import java.net.URI;
 import java.util.ArrayList;

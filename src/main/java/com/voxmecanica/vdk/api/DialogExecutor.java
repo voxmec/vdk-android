@@ -1,8 +1,6 @@
 package com.voxmecanica.vdk.api;
 
 import java.net.URI;
-import com.voxmecanica.vdk.parser.Dialog;
-import com.voxmecanica.vdk.parser.Part;
 
 public interface DialogExecutor {
     public void execute(Dialog dialog);

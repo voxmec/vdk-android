@@ -3,8 +3,8 @@ package com.voxmecanica.vdk.core;
 import com.voxmecanica.vdk.api.DialogContext;
 import com.voxmecanica.vdk.api.PartRenderer;
 import com.voxmecanica.vdk.logging.Logger;
-import com.voxmecanica.vdk.parser.Dialog;
-import com.voxmecanica.vdk.parser.Part;
+import com.voxmecanica.vdk.api.Dialog;
+import com.voxmecanica.vdk.api.Part;
 
 import java.net.URI;
 

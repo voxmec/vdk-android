@@ -3,7 +3,7 @@ package com.voxmecanica.vdk.core;
 import com.voxmecanica.vdk.api.DialogContext;
 import com.voxmecanica.vdk.api.PartRenderer;
 import com.voxmecanica.vdk.logging.Logger;
-import com.voxmecanica.vdk.parser.Part;
+import com.voxmecanica.vdk.api.Part;
 
 public class PauseRenderer implements PartRenderer {
     private Logger LOG = new Logger("PauseRenderer");
