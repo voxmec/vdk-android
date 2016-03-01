@@ -28,7 +28,9 @@ public class MediaRenderer implements PartRenderer {
         Dialog dialog = ctx.getDialog();
         if (dialog.getOrigUriProp() != null) {
             URI origUri = URI.create(dialog.getOrigUriProp());
-            return origUri.resolve(src);
+            if (origUri != null) {
+                return origUri.resolve(src);
+            }
         }
         return URI.create(src);
     }

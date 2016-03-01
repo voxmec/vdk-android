@@ -1,6 +1,7 @@
 package com.voxmecanica.vdk.api;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ public class Dialog {
     private List<DialogParam> params;
 
     public Map<String, String> getProperties() {
-        return properties;
+        return (properties != null) ? properties : (properties = new HashMap<String, String>());
     }
 
     public void setProperties(Map<String, String> properties) {
@@ -18,7 +19,7 @@ public class Dialog {
     }
 
     public List<Part> getParts() {
-        return parts;
+        return (parts != null) ? parts : (parts = new ArrayList<Part>());
     }
 
     public void setParts(List<Part> parts) {
@@ -26,7 +27,7 @@ public class Dialog {
     }
 
     public List<DialogParam> getParams() {
-        return params;
+        return (params != null) ? params : (params = new ArrayList<DialogParam>());
     }
 
     public void setParams(ArrayList<DialogParam> params) {

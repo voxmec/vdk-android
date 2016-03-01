@@ -3,7 +3,6 @@ package com.voxmecanica.vdk.core;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.speech.SpeechRecognizer;
@@ -87,51 +86,40 @@ public class VoxRuntime {
         }
     }
 
-    public VoxRuntime (Context context, Callback.OnReady cb) {
+    public VoxRuntime (Context context) {
         if(context == null)
             throw new IllegalArgumentException("Unable to start VoxRuntime. Need an Application Context.");
         LOG.i("Starting runtime...");
         this.context = context;
-        onReady = cb;
 
         // use application context main looper.
         runtimeLooper = context.getMainLooper();
         eventBus = new RuntimeHandler(runtimeLooper);
 
         // start initialization sequence
-        counter.set(0);
-        eventBus.sendMessage(Message.obtain(eventBus, INIT_SEQUENCES[counter.get()]));
+        //counter.set(0);
+        //eventBus.sendMessage(Message.obtain(eventBus, INIT_SEQUENCES[counter.get()]));
+        initRuntime();
     }
 
-    public void shutdown() {
+    private void initRuntime() {
+        LOG.d("Initializing runtime resources...");
+        connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        httpService = new HttpService();
+        parser = new DialogParser();
+        mediaPlayer = new VoxMediaPlayer();
+        recognizer = SpeechRecognizer.createSpeechRecognizer(context);
+        speechRecEnabled = (SpeechRecognizer.isRecognitionAvailable(context));
+        dialogExec = new VoxDialogExecutor(this);
+        //eventBus.sendMessage(Message.obtain(eventBus, Event.STAT_OK));
+    }
+
+    public void close() {
         //Log.i(TAG, "VoxRuntimeService - Shutting down services...");
         if (mediaPlayer != null)
             mediaPlayer.shutdown();
         shutdownRecognizer();
         shutdownTTS();
-    }
-    
-    protected Context getApplicationContext() {
-        return context;
-    }
-
-    public DialogExecutor getDialogExecutor(){
-        assertReadiness();
-        return dialogExec;
-    }
-
-    protected HttpService getHttpService(){
-        assertReadiness();
-        return httpService;
-    }
-
-    protected DialogParser getDialogParser() {
-        assertReadiness();
-        return parser;
-    }
-
-    protected SpeechRecognizer getSpeechRecognizer() {
-        return recognizer;
     }
 
     public boolean isTextToSpeechEnabled(){
@@ -177,23 +165,34 @@ public class VoxRuntime {
         mediaPlayer.stop();
     }
 
+    public DialogExecutor getDialogExecutor(){
+        assertReadiness();
+        return dialogExec;
+    }
 
-    private void initRuntime() {
-        LOG.d("Initializing runtime resources...");
-        connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        httpService = new HttpService();
-        parser = new DialogParser();
-        mediaPlayer = new VoxMediaPlayer();
-        recognizer = SpeechRecognizer.createSpeechRecognizer(context);
-        speechRecEnabled = (SpeechRecognizer.isRecognitionAvailable(context));
-        dialogExec = new VoxDialogExecutor(this);
-        eventBus.sendMessage(Message.obtain(eventBus, Event.STAT_OK));
+    protected Context getApplicationContext() {
+        return context;
+    }
+
+    protected HttpService getHttpService(){
+        assertReadiness();
+        return httpService;
+    }
+
+    protected DialogParser getDialogParser() {
+        assertReadiness();
+        return parser;
+    }
+
+    protected SpeechRecognizer getSpeechRecognizer() {
+        return recognizer;
     }
 
     private void initSpeech() {
         LOG.i("Initializing TTS connection");
         ttsService = new TextToSpeech(context, new TextToSpeech.OnInitListener(){
             public void onInit(int stat){
+                ready = true;
                 ttsEnabled = (stat == TextToSpeech.SUCCESS);
                 if(ttsEnabled){
                     LOG.d("TextToSpeech is enabled, status (" + stat + ")");
@@ -234,6 +233,5 @@ public class VoxRuntime {
         if(!ready)
             throw new VoxException(VoxException.ErrorType.RuntimeError, "Runtime not ready.");
     }
-
 
 }

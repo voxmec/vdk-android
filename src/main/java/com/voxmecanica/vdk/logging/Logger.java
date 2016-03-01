@@ -5,11 +5,31 @@ import android.util.Log;
 public class Logger {
     private boolean LOGGER_ON = true;
     private String prefix;
+
     public Logger(){
         prefix = "VoxMecanica";
+        assertAvail();
     }
+
     public Logger (String prefix) {
         this.prefix = prefix;
+        assertAvail();
+    }
+
+    // hack - isLoggable is a native method
+    // it will fail at runtime during stand-alone tests
+    // This forces an UnsatisfiedLinkError (if not running on android)
+    // to turn off logging.
+    private void assertAvail() {
+        try{
+            Log.isLoggable(prefix, Log.DEBUG);
+        }catch(UnsatisfiedLinkError err){
+            LOGGER_ON = false;
+        }
+    }
+
+    public void enabled(boolean f){
+        LOGGER_ON = f;
     }
 
     // ************ INFO ************** //
