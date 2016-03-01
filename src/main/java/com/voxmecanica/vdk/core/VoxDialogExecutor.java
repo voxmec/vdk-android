@@ -388,7 +388,7 @@ public class VoxDialogExecutor implements DialogExecutor {
              engine.sendMessage(Message.obtain(engine, Event.OP_FETCH_REMOTE_PROG, ctx));
          }else if (onProgramEndedCallback != null) {
             LOG.d("Found ProgramEndedCallBack, delegating...");
-            onProgramEndedCallback.exec(makeCtxClone(ctx));
+            onProgramEndedCallback.exec(ctx.getDialogResult());
         }
     }
 

@@ -24,7 +24,7 @@ public interface DialogExecutor {
             public void exec(DialogContext ctx);
         }
         public static interface OnProgramEnded extends Callback{
-            public void exec(DialogContext ctx);
+            public void exec(DialogResult res);
         }
         public static interface OnSpeechInputRecognized extends Callback{
             public void exec(DialogContext ctx, Part part);
