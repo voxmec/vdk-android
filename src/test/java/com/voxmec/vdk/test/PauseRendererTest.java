@@ -47,6 +47,6 @@ public class PauseRendererTest {
         PauseRenderer r = new PauseRenderer(context, part, null);
         r.run();
         long ed = new Date().getTime() - sd;
-        Assert.assertTrue(ed >= 502);
+        Assert.assertTrue(ed >= 500);
     }
 }

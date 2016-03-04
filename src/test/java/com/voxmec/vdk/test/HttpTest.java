@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class HttpTest {
     @Test
@@ -45,7 +46,9 @@ public class HttpTest {
         assertEquals(rsp.body().string(), "{dialog}");
 
         RecordedRequest req = svr.takeRequest();
-        assertEquals(req.getPath(), "/test?p0=hello&p1=test");
+       assertTrue(req.getPath().startsWith("/test?"));
+        assertTrue(req.getPath().contains("p0=hello"));
+        assertTrue(req.getPath().contains("p1=test"));
         svr.shutdown();
     }
 
@@ -94,7 +97,9 @@ public class HttpTest {
         assertEquals(req.getPath(), "/test");
         assertEquals(req.getMethod(), "POST");
         String bod = req.getBody().readUtf8Line();
-        assertEquals(bod, "p0=hello&p1=test");
+        assertTrue(bod.contains("p0=hello"));
+        assertTrue(bod.contains("p1=test"));
+        assertTrue(bod.contains("&"));
 
         svr.shutdown();
     }
