@@ -17,7 +17,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestMediaRenderer {
+public class MediaRendererTest {
     @Mock
     VoxRuntime runtime;
     @Mock
